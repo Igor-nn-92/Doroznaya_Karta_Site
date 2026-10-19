@@ -1,0 +1,549 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#ECEFEB">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Проекты">
+<title>Проекты НИРИЗ</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%231D5C87'/%3E%3Cpath d='M9 16.5l4.5 4.5L23 11' stroke='white' stroke-width='3' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Unbounded:wght@500;600&display=swap">
+<style>
+/* Штамп-ведомость: обзор разделов карточками, внутри дерево этап → задача → подзадача */
+:root{
+  --bg:#ECEFEB; --surface:#FAFBF9; --sunk:#E3E7E2; --ink:#18211E; --muted:#5B6863; --line:#CFD6D0;
+  --accent:#1D5C87; --accent-soft:#DCE8F1; --warn:#B9420E; --warn-soft:#F7E2D7; --ok:#2C7349; --ok-soft:#DCEDE2; --wait:#856714; --wait-soft:#F2EAD2;
+  --f-display:"Unbounded","Golos Text",system-ui,sans-serif;
+  --f-body:"Golos Text",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --f-data:"JetBrains Mono",ui-monospace,"SFMono-Regular",Consolas,monospace;
+  --r:10px; color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root{
+  --bg:#111614; --surface:#19201D; --sunk:#141A18; --ink:#E3E9E5; --muted:#93A29B; --line:#2A3430;
+  --accent:#73B4E0; --accent-soft:#1D3242; --warn:#F18B5E; --warn-soft:#3A2219; --ok:#6CC08E; --ok-soft:#18301F; --wait:#D9BA5C; --wait-soft:#33290F; color-scheme:dark}}
+*{box-sizing:border-box}
+html{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.45;-webkit-text-size-adjust:100%}
+[hidden]{display:none!important}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:6px}
+.wrap{max-width:980px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 80px}
+header.top{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px 20px;padding-bottom:16px;border-bottom:1.5px solid var(--ink)}
+h1{font-family:var(--f-display);font-weight:600;font-size:clamp(20px,4.6vw,28px);letter-spacing:-.01em;margin:0;text-wrap:balance}
+.today{font-family:var(--f-data);font-size:12.5px;color:var(--muted);font-variant-numeric:tabular-nums;display:flex;flex-wrap:wrap;gap:4px 12px;align-items:center}
+.today b{color:var(--ink);font-weight:500}
+.sync{display:inline-flex;align-items:center;gap:5px}
+.sync i{width:7px;height:7px;border-radius:50%;background:var(--ok)}
+.sync.busy i{background:var(--wait)}
+.sync.err i{background:var(--warn)}
+.bar-row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;margin:16px 0 18px}
+nav.tabs{display:flex;gap:4px;background:var(--sunk);padding:4px;border-radius:999px;width:fit-content;max-width:100%;overflow-x:auto}
+nav.tabs button{border:0;background:transparent;padding:7px 14px;border-radius:999px;font-weight:500;color:var(--muted);white-space:nowrap}
+nav.tabs button[aria-pressed="true"]{background:var(--surface);color:var(--ink);box-shadow:0 1px 2px rgb(0 0 0/.12)}
+.whoami{font-size:13px;color:var(--muted);display:flex;gap:6px;align-items:center}
+.crumbs{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:0 0 14px;font-size:13.5px;color:var(--muted)}
+.crumbs button{border:0;background:none;padding:0;color:var(--accent);font-weight:500}
+.label{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600}
+
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
+.card{display:flex;flex-direction:column;gap:12px;text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px;min-width:0;transition:border-color .15s}
+.card:hover{border-color:var(--accent)}
+.card h2{font-family:var(--f-display);font-weight:500;font-size:18px;margin:0;text-wrap:balance}
+.card .stage{font-size:14px}
+.card .stage span{color:var(--muted)}
+.bar{height:6px;border-radius:3px;background:var(--sunk);overflow:hidden}
+.bar i{display:block;height:100%;background:var(--ok);border-radius:3px}
+.card .foot{display:flex;flex-wrap:wrap;gap:6px;align-items:center;justify-content:space-between;font-size:13px}
+.next{font-size:13.5px;border-top:1px dashed var(--line);padding-top:10px;display:flex;flex-direction:column;gap:2px;min-width:0}
+.next .t{overflow-wrap:anywhere}
+.add-card{border-style:dashed;background:transparent;color:var(--muted);align-items:center;justify-content:center;min-height:120px;font-weight:500}
+
+.chip{display:inline-flex;align-items:center;gap:4px;font-family:var(--f-data);font-size:11.5px;line-height:1;padding:4px 7px;border-radius:5px;background:var(--sunk);color:var(--muted);white-space:nowrap;font-variant-numeric:tabular-nums}
+.chip.warn{background:var(--warn-soft);color:var(--warn)}
+.chip.ok{background:var(--ok-soft);color:var(--ok)}
+.chip.wait{background:var(--wait-soft);color:var(--wait)}
+.chip.acc{background:var(--accent-soft);color:var(--accent)}
+
+.sec-head{display:flex;flex-direction:column;gap:8px;margin-bottom:16px}
+.sec-head h2{font-family:var(--f-display);font-weight:600;font-size:clamp(20px,5vw,26px);margin:0}
+.sec-note{color:var(--muted);font-size:14px;max-width:68ch;white-space:pre-wrap}
+.toolbar{display:flex;flex-wrap:wrap;gap:8px}
+.btn{border:1px solid var(--line);background:var(--surface);padding:7px 12px;border-radius:8px;font-size:14px;font-weight:500}
+.btn:hover{border-color:var(--accent)}
+.btn:disabled{opacity:.55;cursor:default}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--surface)}
+.btn.danger{color:var(--warn)}
+.btn.ghost{border-color:transparent;background:transparent;color:var(--accent);padding:4px 6px}
+.stages{display:flex;flex-direction:column;gap:10px}
+.stage-box{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.stage-row{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;padding:12px 14px}
+@media (max-width:520px){.stage-row{grid-template-columns:auto 1fr}.stage-meta{grid-column:2;justify-content:flex-start!important}}
+.chev{border:0;background:none;width:26px;height:26px;display:grid;place-items:center;border-radius:6px;color:var(--muted)}
+.chev svg{transition:transform .15s}
+.collapsed .chev svg{transform:rotate(-90deg)}
+.stage-title{border:0;background:none;padding:0;text-align:left;font-weight:600;font-size:16px;min-width:0;overflow-wrap:anywhere}
+.stage-meta{display:flex;flex-wrap:wrap;gap:6px;justify-content:flex-end}
+.stage-body{border-top:1px solid var(--line);padding:6px 14px 10px}
+.collapsed .stage-body{display:none}
+.kids{margin-left:2px;padding-left:12px;border-left:1.5px solid var(--line)}
+.task{display:grid;grid-template-columns:auto 1fr;gap:10px;padding:8px 0;align-items:start}
+.tick{width:22px;height:22px;margin-top:1px;border-radius:50%;border:1.5px solid var(--muted);background:transparent;display:grid;place-items:center;padding:0;color:transparent}
+.task.done > .tick{background:var(--ok);border-color:var(--ok);color:var(--surface)}
+.task.doing > .tick{border-color:var(--accent);box-shadow:inset 0 0 0 4px var(--accent-soft)}
+.task.wait > .tick{border-color:var(--wait);border-style:dashed}
+.tbody{min-width:0;display:flex;flex-direction:column;gap:4px}
+.ttl{border:0;background:none;padding:0;text-align:left;font-size:15px;overflow-wrap:anywhere}
+.task.done > .tbody > .ttl{color:var(--muted);text-decoration:line-through;text-decoration-color:var(--line)}
+.meta{display:flex;flex-wrap:wrap;gap:5px;align-items:center}
+.dep{font-size:12.5px;color:var(--wait)}
+.dep.clear{color:var(--muted)}
+.rule{font-size:12.5px;color:var(--accent)}
+.tnote{font-size:13px;color:var(--muted);white-space:pre-wrap;overflow-wrap:anywhere}
+.add-row{display:flex;gap:6px;padding-top:4px}
+
+.dl-group{margin-bottom:22px}
+.dl-group h3{margin:0 0 8px;display:flex;align-items:baseline;gap:8px}
+.dl-list{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.dl-item{display:grid;grid-template-columns:64px 1fr auto;gap:12px;align-items:center;padding:11px 14px;border-top:1px solid var(--line);text-align:left;width:100%;background:none;border-left:0;border-right:0;border-bottom:0}
+@media (max-width:520px){.dl-item{grid-template-columns:56px 1fr}.dl-item > :last-child{grid-column:2}}
+.dl-item:first-child{border-top:0}
+.dl-date{font-family:var(--f-data);font-size:13px;font-variant-numeric:tabular-nums}
+.dl-date small{display:block;color:var(--muted);font-size:11px}
+.dl-main{min-width:0}
+.dl-main .t{overflow-wrap:anywhere}
+.dl-main .p{font-size:12.5px;color:var(--muted);overflow-wrap:anywhere}
+.overdue .dl-date{color:var(--warn)}
+.hist .dl-item{grid-template-columns:96px 1fr;cursor:default}
+
+.empty{padding:28px 18px;text-align:center;color:var(--muted);background:var(--surface);border:1px dashed var(--line);border-radius:var(--r)}
+.notice{padding:10px 14px;border-radius:8px;background:var(--warn-soft);color:var(--warn);font-size:13.5px;margin-bottom:14px}
+
+.gate{max-width:420px;margin:8vh auto 0;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:24px;display:flex;flex-direction:column;gap:14px}
+.gate h2{font-family:var(--f-display);font-weight:600;font-size:22px;margin:0}
+.gate p{margin:0;color:var(--muted);font-size:14px}
+.err{color:var(--warn);font-size:13.5px;min-height:1em}
+.field{display:flex;flex-direction:column;gap:6px}
+.field input[type=text],.field input[type=password],.field input[type=date],.field input[type=number],.field textarea,.field select{width:100%;padding:9px 10px;border:1px solid var(--line);border-radius:8px;background:var(--bg);min-width:0}
+.field textarea{min-height:84px;resize:vertical}
+.seg{display:flex;flex-wrap:wrap;gap:6px}
+.seg button{border:1px solid var(--line);background:var(--bg);padding:6px 10px;border-radius:7px;font-size:13.5px}
+.seg button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--surface)}
+.checks{display:flex;flex-direction:column;gap:2px;max-height:180px;overflow-y:auto;border:1px solid var(--line);border-radius:8px;padding:6px;background:var(--bg)}
+.checks label{display:flex;gap:8px;align-items:flex-start;padding:5px 4px;font-size:14px;overflow-wrap:anywhere}
+.checks label small{color:var(--muted)}
+.rule-row{display:grid;grid-template-columns:72px 1fr;gap:8px;align-items:center}
+.hint{font-size:12.5px;color:var(--muted)}
+.check-line{display:flex;gap:8px;align-items:center;font-size:14px}
+
+.scrim{position:fixed;inset:0;background:rgb(0 0 0/.35);z-index:20}
+.sheet{position:fixed;z-index:21;background:var(--surface);color:var(--ink);display:flex;flex-direction:column;
+  left:0;right:0;bottom:0;max-height:88vh;border-radius:16px 16px 0 0;
+  padding:16px max(16px,env(safe-area-inset-right,0px)) calc(16px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));box-shadow:0 -8px 30px rgb(0 0 0/.2)}
+@media (min-width:760px){.sheet{left:auto;top:0;bottom:0;width:440px;max-height:none;border-radius:0;padding:calc(20px + env(safe-area-inset-top,0px)) max(20px,env(safe-area-inset-right,0px)) 20px 20px}}
+.sheet-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px}
+.sheet-scroll{overflow-y:auto;display:flex;flex-direction:column;gap:14px;padding-bottom:6px;min-height:0}
+.sheet-foot{display:flex;flex-wrap:wrap;gap:8px;justify-content:space-between;align-items:center;padding-top:12px;border-top:1px solid var(--line);margin-top:6px}
+.who{font-size:12px;color:var(--muted)}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(20px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:8px;font-size:14px;z-index:30;max-width:calc(100% - 32px)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <h1>Проекты НИРИЗ</h1>
+    <div class="today"><span id="today"></span><span class="sync" id="sync" hidden><i></i><span></span></span></div>
+  </header>
+  <div class="bar-row" id="bar-row" hidden>
+    <nav class="tabs" aria-label="Вид">
+      <button id="tab-overview" data-act="tab" data-tab="overview" aria-pressed="true">Обзор</button>
+      <button id="tab-deadlines" data-act="tab" data-tab="deadlines" aria-pressed="false">Сроки</button>
+      <button id="tab-history" data-act="tab" data-tab="history" aria-pressed="false">История</button>
+    </nav>
+    <div class="whoami"><span id="whoami"></span><button class="btn ghost" data-act="logout">Выйти</button></div>
+  </div>
+  <main id="main"></main>
+</div>
+<div id="layer"></div>
+
+<script>
+(function(){
+"use strict";
+const STATUS={todo:"К выполнению",doing:"В работе",wait:"Ждём",done:"Готово"};
+/* Нерабочие дни РФ (праздники и переносы). Дополнять при выходе постановления на следующий год. */
+const HOLIDAYS=new Set(["2026-11-04","2026-12-31","2027-01-01","2027-01-04","2027-01-05","2027-01-06","2027-01-07","2027-01-08","2027-02-23","2027-03-08","2027-05-03","2027-05-10","2027-06-14","2027-11-04"]);
+const WORKING_WEEKENDS=new Set([]);
+const WD=["вс","пн","вт","ср","чт","пт","сб"];
+const API="https://api.github.com";
+const LS={token:"niriz.token",name:"niriz.name",collapsed:"niriz.collapsed"};
+const ls={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}},del(k){try{localStorage.removeItem(k)}catch(e){}}};
+
+let cfg=null,token=null,me="",sha=null,items=new Map(),loaded=false,history=null;
+let view={tab:"overview",section:null};
+let collapsed=new Set();try{collapsed=new Set(JSON.parse(ls.get(LS.collapsed)||"[]"))}catch(e){}
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+
+/* ---------- даты ---------- */
+const iso=d=>d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+const parse=s=>{const [y,m,d]=s.split("-").map(Number);return new Date(y,m-1,d)};
+const todayIso=()=>iso(new Date());
+const isWork=d=>{const k=iso(d);if(WORKING_WEEKENDS.has(k))return true;const w=d.getDay();return w!==0&&w!==6&&!HOLIDAYS.has(k)};
+const plusDays=(d,n)=>{const x=new Date(d);x.setDate(x.getDate()+n);return x};
+/* Самая ранняя дата начала после base, когда между ними прошло n полных рабочих дней (+1 день запаса). */
+function earliestAfter(base,n){let d=parse(base),c=0;while(c<n){d=plusDays(d,1);if(isWork(d))c++}d=plusDays(d,1);while(!isWork(d))d=plusDays(d,1);return iso(d)}
+function workdaysUntil(target){let d=parse(todayIso()),t=parse(target),c=0;while(d<t){d=plusDays(d,1);if(isWork(d))c++}return c}
+const calDiff=(a,b)=>Math.round((parse(b)-parse(a))/864e5);
+const fmt=s=>{const d=parse(s);return String(d.getDate()).padStart(2,"0")+"."+String(d.getMonth()+1).padStart(2,"0")};
+const fmtW=s=>WD[parse(s).getDay()]+" "+fmt(s);
+function dueChip(date,done){
+  if(!date)return"";
+  if(done)return`<span class="chip">${fmt(date)}</span>`;
+  const t=todayIso();
+  if(date<t)return`<span class="chip warn">просрочено ${calDiff(date,t)} дн. · ${fmt(date)}</span>`;
+  if(date===t)return`<span class="chip warn">сегодня</span>`;
+  const n=workdaysUntil(date);
+  return`<span class="chip ${n<=3?"warn":"acc"}">${fmtW(date)} · ${n} раб. дн.</span>`;
+}
+
+/* ---------- модель ---------- */
+const kids=pid=>[...items.values()].filter(i=>(i.parent||"")===pid).sort((a,b)=>(a.order??0)-(b.order??0));
+function leaves(id){const k=kids(id);if(!k.length)return[items.get(id)];return k.flatMap(c=>leaves(c.id))}
+function descendants(id){return kids(id).flatMap(c=>[c,...descendants(c.id)])}
+function sectionOf(it){let x=it,g=0;while(x&&x.parent&&g++<50)x=items.get(x.parent);return x}
+function ruleDate(it,g=0){
+  if(g>20||!it.rule||!it.rule.ref)return null;const r=items.get(it.rule.ref);if(!r)return null;
+  const base=r.status==="done"&&r.doneAt?r.doneAt:(r.due||ruleDate(r,g+1));return base?earliestAfter(base,Number(it.rule.wd)||0):null;
+}
+const effDate=it=>it.due||ruleDate(it);
+const isDone=it=>it&&it.status==="done";
+function progress(id){const l=leaves(id).filter(x=>x&&x.kind!=="section");if(!l.length)return{d:0,t:0};return{d:l.filter(isDone).length,t:l.length}}
+function nextDeadline(id){return descendants(id).filter(x=>!isDone(x)&&effDate(x)).sort((a,b)=>effDate(a).localeCompare(effDate(b)))[0]||null}
+function overdueCount(id){const t=todayIso();return descendants(id).filter(x=>!isDone(x)&&effDate(x)&&effDate(x)<t).length}
+const pathTitle=it=>{const p=[];let x=items.get(it.parent),g=0;while(x&&x.kind!=="section"&&g++<50){p.unshift(x.title);x=items.get(x.parent)}return p.join(" → ")};
+
+/* ---------- GitHub ---------- */
+const enc=new TextEncoder(),dec=new TextDecoder();
+const toB64=bytes=>{let s="";for(let i=0;i<bytes.length;i+=0x8000)s+=String.fromCharCode.apply(null,bytes.subarray(i,i+0x8000));return btoa(s)};
+const fromB64=b=>Uint8Array.from(atob(b.replace(/\s/g,"")),c=>c.charCodeAt(0));
+async function gh(path,opts={},tok=token){
+  const r=await fetch(API+path,Object.assign({},opts,{cache:"no-store",headers:Object.assign({Authorization:"Bearer "+tok,Accept:"application/vnd.github+json","X-GitHub-Api-Version":"2022-11-28"},opts.headers||{})}));
+  return r;
+}
+const dataPath=()=>`/repos/${cfg.owner}/${cfg.dataRepo}/contents/data.json`;
+class AuthError extends Error{}
+async function fetchData(){
+  const r=await gh(dataPath()+"?t="+Date.now());
+  if(r.status===401||r.status===403)throw new AuthError("auth");
+  if(r.status===404)return{sha:null,data:{items:{}}};
+  if(!r.ok)throw new Error("HTTP "+r.status);
+  const j=await r.json();
+  return{sha:j.sha,data:JSON.parse(dec.decode(fromB64(j.content)))};
+}
+function applyData(d){
+  items=new Map(Object.entries(d.data.items||{}).map(([id,v])=>[id,Object.assign({},v,{id})]));sha=d.sha;loaded=true;
+}
+let syncing=false;
+function setSync(state,text){const s=$("#sync");s.hidden=false;s.className="sync"+(state?" "+state:"");s.querySelector("span").textContent=text}
+async function refresh(quiet){
+  if(syncing)return;syncing=true;if(!quiet)setSync("busy","загрузка");
+  try{const d=await fetchData();if(d.sha!==sha||!loaded){applyData(d);if(!edit)render()}setSync("","синхронизировано "+new Date().toTimeString().slice(0,5))}
+  catch(e){if(e instanceof AuthError){logout("Ключ доступа больше не действует. Его нужно перевыпустить в GitHub и заново пройти настройку.");return}setSync("err","нет связи с GitHub")}
+  finally{syncing=false}
+}
+/* ops: [{id, data}] или [{id, del:true}]. Перечитываем свежую версию и применяем поверх, чтобы не затереть чужие правки. */
+async function commit(ops,message){
+  setSync("busy","сохраняю");
+  for(let attempt=0;attempt<4;attempt++){
+    let fresh;try{fresh=await fetchData()}catch(e){if(e instanceof AuthError){logout("Ключ доступа больше не действует.");return false}setSync("err","нет связи с GitHub");toast("Не сохранилось: нет связи с GitHub. Попробуйте ещё раз.");return false}
+    const obj=fresh.data;obj.items=obj.items||{};
+    for(const op of ops){if(op.del)delete obj.items[op.id];else{const d=Object.assign({},op.data);delete d.id;obj.items[op.id]=d}}
+    obj.updatedAt=new Date().toISOString();obj.updatedBy=me;
+    const body={message:(me?me+": ":"")+message,content:toB64(enc.encode(JSON.stringify(obj,null,1)))};
+    if(fresh.sha)body.sha=fresh.sha;
+    const r=await gh(dataPath(),{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)});
+    if(r.ok){const j=await r.json();applyData({sha:j.content.sha,data:obj});history=null;render();setSync("","сохранено "+new Date().toTimeString().slice(0,5));return true}
+    if(r.status===409||r.status===422){await new Promise(res=>setTimeout(res,300+Math.random()*700));continue}
+    if(r.status===401||r.status===403){toast("Нет прав на запись — проверьте ключ доступа (Contents: Read and write).");setSync("err","нет прав");return false}
+    setSync("err","ошибка "+r.status);toast("GitHub ответил ошибкой "+r.status+". Попробуйте ещё раз.");return false;
+  }
+  toast("Не сохранилось: файл одновременно правили. Попробуйте ещё раз.");return false;
+}
+async function loadHistory(){
+  try{const r=await gh(`/repos/${cfg.owner}/${cfg.dataRepo}/commits?path=data.json&per_page=50`);if(!r.ok)throw 0;
+    history=(await r.json()).map(c=>({msg:c.commit.message,date:c.commit.author&&c.commit.author.date}));}
+  catch(e){history=[]}
+  if(view.tab==="history")render();
+}
+
+/* ---------- шифрование ключа паролем ---------- */
+async function deriveKey(pw,salt,iter){const base=await crypto.subtle.importKey("raw",enc.encode(pw),"PBKDF2",false,["deriveKey"]);return crypto.subtle.deriveKey({name:"PBKDF2",salt,iterations:iter,hash:"SHA-256"},base,{name:"AES-GCM",length:256},false,["encrypt","decrypt"])}
+async function sealToken(tok,pw){const salt=crypto.getRandomValues(new Uint8Array(16)),iv=crypto.getRandomValues(new Uint8Array(12)),iter=600000;const k=await deriveKey(pw,salt,iter);const ct=new Uint8Array(await crypto.subtle.encrypt({name:"AES-GCM",iv},k,enc.encode(tok)));return{kdf:"PBKDF2-SHA256",iter,salt:toB64(salt),iv:toB64(iv),ct:toB64(ct)}}
+async function openToken(box,pw){const k=await deriveKey(pw,fromB64(box.salt),box.iter);return dec.decode(await crypto.subtle.decrypt({name:"AES-GCM",iv:fromB64(box.iv)},k,fromB64(box.ct)))}
+
+/* ---------- рендер ---------- */
+function renderToday(){const t=todayIso(),d=parse(t);$("#today").innerHTML=`Сегодня <b>${WD[d.getDay()]} ${fmt(t)}.${d.getFullYear()}</b> · ${isWork(d)?"рабочий день":"выходной"}`}
+function render(){
+  renderToday();
+  $("#bar-row").hidden=false;
+  ["overview","deadlines","history"].forEach(t=>$("#tab-"+t).setAttribute("aria-pressed",view.tab===t));
+  $("#whoami").textContent=me?me:"";
+  const m=$("#main");
+  if(!loaded){m.innerHTML=`<div class="empty">Загружаю проекты…</div>`;return}
+  let h="";
+  if(view.tab==="deadlines")h+=renderDeadlines();
+  else if(view.tab==="history")h+=renderHistory();
+  else if(view.section&&items.get(view.section))h+=renderSection(items.get(view.section));
+  else h+=renderOverview();
+  m.innerHTML=h;
+}
+function renderOverview(){
+  const secs=kids("");
+  if(!secs.length)return`<div class="empty">Разделов пока нет.<br><br><button class="btn primary" data-act="new" data-parent="" data-kind="section">Добавить раздел</button></div>`;
+  return`<div class="grid">${secs.map(s=>{
+    const st=kids(s.id),cur=st.find(x=>x.status==="doing")||st.find(x=>!isDone(x));
+    const p=progress(s.id),nx=nextDeadline(s.id),od=overdueCount(s.id);
+    return`<button class="card" data-act="open-sec" data-id="${esc(s.id)}">
+      <div class="label">Раздел</div>
+      <h2>${esc(s.title)}</h2>
+      <div class="stage">${cur?`<span>Этап:</span> ${esc(cur.title)}`:`<span>${st.length?"Все этапы закрыты":"Этапов пока нет"}</span>`}</div>
+      <div class="bar" role="img" aria-label="Готово ${p.d} из ${p.t}"><i style="width:${p.t?Math.round(p.d/p.t*100):0}%"></i></div>
+      <div class="foot"><span class="chip">${p.d} из ${p.t} готово</span>${od?`<span class="chip warn">просрочено: ${od}</span>`:""}</div>
+      ${nx?`<div class="next"><span class="label">Ближайший срок</span><span class="t">${esc(nx.title)}</span><span>${dueChip(effDate(nx),false)}</span></div>`:""}
+    </button>`}).join("")}
+    <button class="card add-card" data-act="new" data-parent="" data-kind="section">+ Раздел</button></div>`;
+}
+function renderSection(s){
+  const st=kids(s.id);
+  return`<div class="crumbs"><button data-act="home">Все разделы</button><span>/</span><span>${esc(s.title)}</span></div>
+  <div class="sec-head">
+    <h2>${esc(s.title)}</h2>
+    ${s.note?`<div class="sec-note">${esc(s.note)}</div>`:""}
+    <div class="toolbar"><button class="btn" data-act="new" data-parent="${esc(s.id)}" data-kind="stage">+ Этап</button><button class="btn" data-act="edit" data-id="${esc(s.id)}">Изменить раздел</button></div>
+  </div>
+  ${st.length?`<div class="stages">${st.map(renderStage).join("")}</div>`:`<div class="empty">Этапов пока нет. Добавьте первый этап — внутри него появятся задачи.</div>`}`;
+}
+function renderStage(st){
+  const p=progress(st.id),c=collapsed.has(st.id),k=kids(st.id);
+  const sc=st.status==="done"?"ok":st.status==="wait"?"wait":st.status==="doing"?"acc":"";
+  return`<section class="stage-box${c?" collapsed":""}">
+    <div class="stage-row">
+      <button class="chev" data-act="toggle" data-id="${esc(st.id)}" aria-expanded="${!c}" aria-label="Свернуть или развернуть"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M3 5l4 4 4-4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+      <button class="stage-title" data-act="edit" data-id="${esc(st.id)}">${esc(st.title)}</button>
+      <div class="stage-meta"><span class="chip ${sc}">${STATUS[st.status]||STATUS.todo}</span>${p.t&&k.length?`<span class="chip">${p.d}/${p.t}</span>`:""}${dueChip(effDate(st),isDone(st))}</div>
+    </div>
+    <div class="stage-body">
+      ${st.note?`<div class="tnote" style="padding:6px 0 4px">${esc(st.note)}</div>`:""}
+      ${k.map(renderTask).join("")||`<div class="hint" style="padding:8px 0">Задач пока нет.</div>`}
+      <div class="add-row"><button class="btn ghost" data-act="new" data-parent="${esc(st.id)}" data-kind="task">+ Задача</button></div>
+    </div></section>`;
+}
+function renderTask(t){
+  const k=kids(t.id),deps=(t.deps||[]).map(id=>items.get(id)).filter(Boolean);
+  const open=deps.filter(d=>!isDone(d)),rd=ruleDate(t),ref=t.rule&&items.get(t.rule.ref);
+  const p=k.length?progress(t.id):null;
+  const meta=`${t.status==="doing"||t.status==="wait"?`<span class="chip ${t.status==="wait"?"wait":"acc"}">${STATUS[t.status]}</span>`:""}${dueChip(t.due,isDone(t))}${p?`<span class="chip">${p.d}/${p.t}</span>`:""}${t.who?`<span class="chip">${esc(t.who)}</span>`:""}`;
+  return`<div class="task ${esc(t.status||"todo")}">
+    <button class="tick" data-act="tick" data-id="${esc(t.id)}" aria-label="${isDone(t)?"Снять отметку":"Отметить готово"}"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M2.5 6.2l2.3 2.3 4.7-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+    <div class="tbody">
+      <button class="ttl" data-act="edit" data-id="${esc(t.id)}">${esc(t.title)}</button>
+      ${meta?`<div class="meta">${meta}</div>`:""}
+      ${rd&&!isDone(t)&&ref?`<div class="rule">Не ранее ${fmtW(rd)} — ${esc(t.rule.wd)} раб. дн. после «${esc(ref.title)}»</div>`:""}
+      ${deps.length&&!isDone(t)?(open.length?`<div class="dep">Сначала: ${open.map(d=>esc(d.title)).join("; ")}</div>`:`<div class="dep clear">Всё нужное до неё готово</div>`):""}
+      ${t.note?`<div class="tnote">${esc(t.note)}</div>`:""}
+      ${k.length?`<div class="kids">${k.map(renderTask).join("")}</div>`:""}
+      ${k.length&&!isDone(t)?`<div class="add-row" style="padding:0"><button class="btn ghost" data-act="new" data-parent="${esc(t.id)}" data-kind="task" style="font-size:13px">+ подзадача</button></div>`:""}
+    </div></div>`;
+}
+function renderDeadlines(){
+  const t=todayIso(),list=[...items.values()].filter(x=>x.kind!=="section"&&!isDone(x)&&effDate(x)).sort((a,b)=>effDate(a).localeCompare(effDate(b)));
+  if(!list.length)return`<div class="empty">Открытых задач со сроком нет.</div>`;
+  const d=parse(t),toSun=(7-d.getDay())%7,weekEnd=iso(plusDays(d,toSun)),twoW=iso(plusDays(d,toSun+14));
+  const g=[["Просрочено",x=>effDate(x)<t],["Эта неделя",x=>effDate(x)>=t&&effDate(x)<=weekEnd],["Следующие две недели",x=>effDate(x)>weekEnd&&effDate(x)<=twoW],["Позже",x=>effDate(x)>twoW]];
+  return g.map(([name,f])=>{const L=list.filter(f);if(!L.length)return"";
+    return`<div class="dl-group"><h3><span class="label">${name}</span><span class="chip">${L.length}</span></h3><div class="dl-list">${L.map(x=>{
+      const e=effDate(x),s=sectionOf(x),pt=pathTitle(x);
+      return`<button class="dl-item${e<t?" overdue":""}" data-act="jump" data-id="${esc(x.id)}"><div class="dl-date">${fmt(e)}<small>${WD[parse(e).getDay()]}${x.due?"":" · расчёт"}</small></div><div class="dl-main"><div class="t">${esc(x.title)}</div><div class="p">${esc(s?s.title:"")}${pt?" · "+esc(pt):""}</div></div><div>${dueChip(e,false)}</div></button>`}).join("")}</div></div>`}).join("");
+}
+function renderHistory(){
+  if(history===null){loadHistory();return`<div class="empty">Загружаю историю правок…</div>`}
+  if(!history.length)return`<div class="empty">Правок пока нет.</div>`;
+  return`<div class="dl-list hist">${history.map(h=>{const dt=h.date?new Date(h.date):null;
+    return`<div class="dl-item"><div class="dl-date">${dt?fmt(iso(dt)):""}<small>${dt?dt.toTimeString().slice(0,5):""}</small></div><div class="dl-main"><div class="t">${esc(h.msg)}</div></div></div>`}).join("")}</div>`;
+}
+
+/* ---------- вход и настройка ---------- */
+function showGate(err){
+  $("#bar-row").hidden=true;$("#sync").hidden=true;renderToday();
+  const saved=ls.get(LS.name)||"";
+  $("#main").innerHTML=`<form class="gate" id="gate" autocomplete="on">
+    <h2>Вход</h2><p>Общий пароль команды. На этом устройстве его спросят один раз.</p>
+    <div class="field"><label class="label" for="g-name">Ваше имя</label><input type="text" id="g-name" value="${esc(saved)}" placeholder="Игорь, Алёна…" autocomplete="nickname" required></div>
+    <div class="field"><label class="label" for="g-pw">Пароль</label><input type="password" id="g-pw" autocomplete="current-password" required></div>
+    <label class="check-line"><input type="checkbox" id="g-remember" checked> Запомнить на этом устройстве</label>
+    <div class="err" id="g-err">${esc(err||"")}</div>
+    <button class="btn primary" type="submit" id="g-go">Войти</button>
+  </form>`;
+  $("#g-name").value||$("#g-name").focus();if($("#g-name").value)$("#g-pw").focus();
+  $("#gate").addEventListener("submit",async e=>{e.preventDefault();
+    const btn=$("#g-go");btn.disabled=true;btn.textContent="Проверяю…";$("#g-err").textContent="";
+    try{const tok=await openToken(cfg.box,$("#g-pw").value);me=$("#g-name").value.trim();ls.set(LS.name,me);if($("#g-remember").checked)ls.set(LS.token,tok);await start(tok)}
+    catch(err){btn.disabled=false;btn.textContent="Войти";$("#g-err").textContent="Пароль не подошёл."}
+  });
+}
+function showSetup(msg){
+  $("#bar-row").hidden=true;renderToday();
+  const guessOwner=(location.hostname.match(/^([^.]+)\.github\.io$/)||[])[1]||"";
+  const guessSite=location.pathname.split("/").filter(Boolean)[0]||"";
+  $("#main").innerHTML=`<form class="gate" id="setup" autocomplete="off">
+    <h2>Первичная настройка</h2>
+    <p>Делается один раз. Ключ GitHub шифруется паролем прямо в браузере и в открытом виде никуда не уходит.</p>
+    ${msg?`<div class="notice">${esc(msg)}</div>`:""}
+    <div class="field"><label class="label" for="s-owner">Логин GitHub</label><input type="text" id="s-owner" value="${esc(guessOwner)}" required></div>
+    <div class="field"><label class="label" for="s-site">Репозиторий сайта (открытый)</label><input type="text" id="s-site" value="${esc(guessSite||"niriz")}" required></div>
+    <div class="field"><label class="label" for="s-data">Репозиторий данных (закрытый)</label><input type="text" id="s-data" value="niriz-data" required></div>
+    <div class="field"><label class="label" for="s-token">Ключ доступа GitHub</label><input type="password" id="s-token" placeholder="github_pat_…" required><span class="hint">Fine-grained token на оба репозитория, права Contents: Read and write.</span></div>
+    <div class="field"><label class="label" for="s-pw">Пароль команды</label><input type="password" id="s-pw" minlength="10" required><span class="hint">Не короче 10 символов — лучше фраза из 3–4 слов.</span></div>
+    <div class="field"><label class="label" for="s-pw2">Пароль ещё раз</label><input type="password" id="s-pw2" required></div>
+    <div class="field"><label class="label" for="s-name">Ваше имя</label><input type="text" id="s-name" value="Игорь" required></div>
+    <div class="err" id="s-err"></div>
+    <button class="btn primary" type="submit" id="s-go">Сохранить настройку</button>
+  </form>`;
+  $("#setup").addEventListener("submit",async e=>{e.preventDefault();
+    const v=id=>$(id).value.trim(),err=t=>{$("#s-err").textContent=t;btn.disabled=false;btn.textContent="Сохранить настройку"};
+    const btn=$("#s-go");btn.disabled=true;btn.textContent="Проверяю…";
+    const owner=v("#s-owner"),site=v("#s-site"),data=v("#s-data"),tok=v("#s-token"),pw=$("#s-pw").value;
+    if(pw!==$("#s-pw2").value)return err("Пароли не совпадают.");
+    try{
+      const r=await gh(`/repos/${owner}/${data}`,{},tok);
+      if(r.status===401)return err("GitHub не принял ключ. Проверьте, что скопирован целиком.");
+      if(!r.ok)return err(`Ключ не видит репозиторий ${owner}/${data}. Проверьте название и доступ ключа к нему.`);
+      const repo=await r.json();if(!repo.private)return err(`Репозиторий ${data} открытый. Сделайте его Private — там будут данные проектов.`);
+      btn.textContent="Шифрую…";
+      const box=await sealToken(tok,pw);
+      const conf={owner,dataRepo:data,box};
+      const path=`/repos/${owner}/${site}/contents/config.json`;
+      const ex=await gh(path,{},tok);const exSha=ex.ok?(await ex.json()).sha:undefined;
+      const put=await gh(path,{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify(Object.assign({message:"Настройка доступа",content:toB64(enc.encode(JSON.stringify(conf,null,1)))},exSha?{sha:exSha}:{}))},tok);
+      if(!put.ok)return err(`Не удалось записать настройку в ${owner}/${site} (ошибка ${put.status}). Дайте ключу доступ и к этому репозиторию.`);
+      cfg=conf;me=v("#s-name");ls.set(LS.name,me);ls.set(LS.token,tok);
+      toast("Настройка сохранена. На других устройствах вход заработает через 1–2 минуты.");
+      await start(tok);
+    }catch(x){err("Нет связи с GitHub. Попробуйте ещё раз.")}
+  });
+}
+function logout(msg){ls.del(LS.token);token=null;loaded=false;items=new Map();closeEditor();if(cfg&&cfg.box)showGate(msg);else showSetup(msg)}
+let poll=null;
+async function start(tok){
+  token=tok;me=me||ls.get(LS.name)||"";loaded=false;render();
+  await refresh(false);
+  clearInterval(poll);poll=setInterval(()=>{if(document.visibilityState==="visible"&&token&&!edit)refresh(true)},30000);
+}
+document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible"&&token&&!edit)refresh(true)});
+
+/* ---------- редактор ---------- */
+let edit=null;
+function newId(){return"i"+Date.now().toString(36)+Math.random().toString(36).slice(2,6)}
+function openEditor(id,parent,kind){
+  const it=id?items.get(id):null;if(id&&!it)return;
+  edit={id:id||newId(),isNew:!it,
+    data:it?JSON.parse(JSON.stringify(it)):{parent,kind,title:"",status:"todo",due:"",deps:[],note:"",who:"",rule:null,order:Math.max(0,...kids(parent).map(x=>x.order??0))+1},confirmDel:false};
+  delete edit.data.id;drawEditor();
+}
+function candidates(){
+  const anchor=edit.isNew?(items.get(edit.data.parent)||null):items.get(edit.id);
+  const sec=anchor?sectionOf(anchor):null;
+  if(!sec||edit.data.kind==="section")return[];
+  const excl=new Set([edit.id,...(edit.isNew?[]:descendants(edit.id).map(x=>x.id))]);
+  return descendants(sec.id).filter(x=>!excl.has(x.id));
+}
+function drawEditor(){
+  const d=edit.data,kindName={section:"Раздел",stage:"Этап",task:"Задача"}[d.kind]||"Задача";
+  const c=candidates();
+  const rd=d.rule&&d.rule.ref?(()=>{const r=items.get(d.rule.ref);const b=r&&(r.status==="done"&&r.doneAt?r.doneAt:(r.due||ruleDate(r)));return b?earliestAfter(b,Number(d.rule.wd)||0):null})():null;
+  $("#layer").innerHTML=`<div class="scrim" data-act="close"></div>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="ed-h">
+    <div class="sheet-head"><div class="label">${edit.isNew?"Новый: ":""}${kindName}</div><button class="btn ghost" data-act="close">Закрыть</button></div>
+    <div class="sheet-scroll">
+      <div class="field"><label class="label" for="ed-title" id="ed-h">Название</label><input type="text" id="ed-title" value="${esc(d.title)}"></div>
+      ${d.kind!=="section"?`<div class="field"><span class="label">Статус</span><div class="seg" id="ed-status">${Object.entries(STATUS).map(([k,v])=>`<button type="button" data-st="${k}" aria-pressed="${d.status===k}">${v}</button>`).join("")}</div></div>
+      <div class="field"><label class="label" for="ed-due">Срок</label><input type="date" id="ed-due" value="${esc(d.due||"")}">${rd&&!d.due?`<span class="hint">Расчётная дата по правилу: ${fmtW(rd)}</span>`:""}</div>
+      <div class="field"><label class="label" for="ed-who">Ответственный</label><input type="text" id="ed-who" value="${esc(d.who||"")}" placeholder="Игорь, Алёна, подрядчик…"></div>
+      ${c.length?`<div class="field"><span class="label">Что нужно сделать до этого</span><div class="checks" id="ed-deps">${c.map(x=>`<label><input type="checkbox" value="${esc(x.id)}" ${(d.deps||[]).includes(x.id)?"checked":""}><span>${esc(x.title)} <small>${isDone(x)?"· готово":""}</small></span></label>`).join("")}</div></div>
+      <div class="field"><span class="label">Правило срока</span>
+        <div class="rule-row"><input type="number" id="ed-wd" min="0" max="120" value="${d.rule?esc(d.rule.wd):""}" placeholder="7" aria-label="Рабочих дней">
+        <select id="ed-ref" aria-label="После какой задачи"><option value="">— раб. дн. после задачи —</option>${c.map(x=>`<option value="${esc(x.id)}" ${d.rule&&d.rule.ref===x.id?"selected":""}>${esc(x.title)}</option>`).join("")}</select></div>
+        <span class="hint">${rd?`Не ранее ${fmtW(rd)}. `:""}Например, начало работ — не ранее 7 раб. дн. после подачи извещения. Считается по производственному календарю, с запасом в один день.</span></div>`:""}`:""}
+      <div class="field"><label class="label" for="ed-note">Заметка</label><textarea id="ed-note">${esc(d.note||"")}</textarea></div>
+    </div>
+    <div class="sheet-foot">
+      ${edit.confirmDel?`<span class="who">Удалить вместе со всем вложенным?</span><span style="display:flex;gap:6px"><button class="btn" data-act="del-no">Нет</button><button class="btn danger" data-act="del-yes">Удалить</button></span>`
+        :`${edit.isNew?"<span></span>":`<span style="display:flex;gap:6px;flex-wrap:wrap"><button class="btn danger" data-act="del">Удалить</button>${d.kind!=="section"?`<button class="btn" data-act="add-child">+ ${d.kind==="stage"?"Задача":"Подзадача"}</button>`:""}</span>`}<span style="display:flex;gap:8px;align-items:center"><span class="who">${d.updatedAt?"изм. "+fmt(d.updatedAt.slice(0,10))+(d.updatedBy?" · "+esc(d.updatedBy):""):""}</span><button class="btn primary" data-act="save" id="ed-save">${edit.isNew?"Добавить":"Сохранить"}</button></span>`}
+    </div></div>`;
+  if(edit.isNew)$("#ed-title").focus();
+}
+function collect(){
+  const d=edit.data;d.title=$("#ed-title").value.trim();d.note=$("#ed-note").value;
+  if(d.kind!=="section"){d.due=$("#ed-due").value||"";d.who=$("#ed-who").value.trim();
+    const dp=$("#ed-deps");if(dp)d.deps=[...dp.querySelectorAll("input:checked")].map(i=>i.value);
+    const ref=$("#ed-ref"),wd=$("#ed-wd");if(ref)d.rule=ref.value&&wd.value!==""?{ref:ref.value,wd:Number(wd.value)}:null}
+}
+const stamp=()=>({updatedAt:new Date().toISOString(),updatedBy:me});
+async function save(){
+  collect();const d=edit.data;if(!d.title){toast("Введите название.");$("#ed-title").focus();return}
+  if(d.status==="done"&&!d.doneAt)d.doneAt=todayIso();if(d.status!=="done")d.doneAt=null;
+  Object.assign(d,stamp());
+  const id=edit.id,isNew=edit.isNew,kind=d.kind,btn=$("#ed-save");if(btn){btn.disabled=true;btn.textContent="Сохраняю…"}
+  const ok=await commit([{id,data:d}],(isNew?"добавил(а) «":"изменил(а) «")+d.title+"»");
+  if(ok){closeEditor();toast(isNew?"Добавлено":"Сохранено");if(isNew&&kind==="section"){view={tab:"overview",section:id};render()}}
+  else if(btn){btn.disabled=false;btn.textContent=isNew?"Добавить":"Сохранить"}
+}
+async function del(){
+  const all=[edit.id,...descendants(edit.id).map(x=>x.id)],title=edit.data.title;
+  if(await commit(all.map(id=>({id,del:true})),"удалил(а) «"+title+"»"+(all.length>1?" и вложенное ("+(all.length-1)+")":""))){if(view.section===edit.id)view.section=null;closeEditor();render();toast("Удалено")}
+}
+function closeEditor(){edit=null;$("#layer").innerHTML=""}
+let tt;function toast(m){clearTimeout(tt);let el=$("#toast");if(!el){el=document.createElement("div");el.id="toast";el.className="toast";el.setAttribute("role","status");document.body.appendChild(el)}el.textContent=m;tt=setTimeout(()=>el.remove(),3200)}
+
+/* ---------- события ---------- */
+document.addEventListener("click",async e=>{
+  const st=e.target.closest("[data-st]");
+  if(st&&edit){collect();edit.data.status=st.dataset.st;drawEditor();return}
+  const b=e.target.closest("[data-act]");if(!b)return;const a=b.dataset.act,id=b.dataset.id;
+  if(a==="tab"){view.tab=b.dataset.tab;if(view.tab==="history")history=null;render()}
+  else if(a==="home"){view={tab:"overview",section:null};render()}
+  else if(a==="open-sec"){view={tab:"overview",section:id};render();scrollTo(0,0)}
+  else if(a==="jump"){const s=sectionOf(items.get(id));view={tab:"overview",section:s&&s.id};let x=items.get(id),g=0;while(x&&x.parent&&g++<50){collapsed.delete(x.parent);x=items.get(x.parent)}render();openEditor(id)}
+  else if(a==="toggle"){collapsed.has(id)?collapsed.delete(id):collapsed.add(id);ls.set(LS.collapsed,JSON.stringify([...collapsed]));render()}
+  else if(a==="edit")openEditor(id);
+  else if(a==="new")openEditor(null,b.dataset.parent,b.dataset.kind);
+  else if(a==="close")closeEditor();
+  else if(a==="add-child"){const pid=edit.id;closeEditor();openEditor(null,pid,"task")}
+  else if(a==="save")save();
+  else if(a==="del"){collect();edit.confirmDel=true;drawEditor()}
+  else if(a==="del-no"){edit.confirmDel=false;drawEditor()}
+  else if(a==="del-yes")del();
+  else if(a==="logout")logout();
+  else if(a==="tick"){const it=items.get(id);if(!it||b.disabled)return;b.disabled=true;const done=!isDone(it);
+    const data=Object.assign({},it,{status:done?"done":"todo",doneAt:done?todayIso():null},stamp());
+    if(await commit([{id,data}],(done?"отметил(а) готово «":"снял(а) отметку «")+it.title+"»"))toast(done?"Готово":"Отметка снята");else b.disabled=false}
+});
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&edit)closeEditor()});
+
+/* ---------- запуск ---------- */
+(async()=>{
+  renderToday();
+  if(!window.crypto||!crypto.subtle){$("#main").innerHTML=`<div class="empty">Откройте сайт по адресу https://… — по http браузер не даёт расшифровать доступ.</div>`;return}
+  try{const r=await fetch("config.json?t="+Date.now(),{cache:"no-store"});if(r.ok)cfg=await r.json()}catch(e){}
+  if(!cfg||!cfg.box||!cfg.owner){showSetup();return}
+  const tok=ls.get(LS.token);
+  if(tok){me=ls.get(LS.name)||"";start(tok)}else showGate();
+})();
+})();
+</script>
+</body>
+</html>
